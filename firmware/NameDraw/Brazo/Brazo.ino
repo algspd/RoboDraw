@@ -1,7 +1,7 @@
 #include <Servo.h>
 
-double l1=0.50; // First arm length (mm)
-double l2=0.75; // Second arm length (mm)
+double l1=50; // First arm length (mm)
+double l2=75; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
@@ -10,9 +10,13 @@ double minstep=0.1; //mm
 // Recognized commands:
 // * d T : delay T millis
 //     T must be an integer
-// * m X.X Y.Y : move to (X.X,Y.Y)
+// * m X.X Y.Y V : move to (X.X,Y.Y)
 //     X.X and Y.Y must be in decimal format,
 //     even if they are integers
+//     V must be an integer
+//       V=0 Slow movement, interpolated, writing
+//       V=1 Quik movement, not interpolated, moving from one letter to another
+// * g : Return position of the arm
 
 Servo servo1, servo2;
 
@@ -32,7 +36,7 @@ void loop() {
   //Serial communication variables
   char input[40],buf,*chop;
   double x1,x2,nx2,y1,y2,ny2;
-  int time;
+  int time, p;
   //Interpolation variables
   int i,segments;
   
@@ -83,6 +87,9 @@ void loop() {
       y2 = atoi(chop);
       ny2=strlen(chop);
       
+      chop=strtok(NULL," ");
+      p = atoi(chop);
+      
       x=x1+x2/pow(10,nx2); //mm
       y=y1+y2/pow(10,ny2); //mm
       
@@ -96,15 +103,23 @@ void loop() {
       Serial.print(",");
       Serial.print(y);
       Serial.print(") in ");
-      Serial.print(segments);
-      Serial.println(" segemnts.");
 
       
       // Interpolate
-      for (i=0;i<=segments-1;i++){
-        moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
+      if (p==1) {
+        
+        Serial.print(segments);
+        Serial.println(" segemnts.");
+        for (i=1;i<=segments-1;i++){
+          moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
+        }
+      } else {
+        Serial.println("1 quick segemnt.");
       }
+      
+      //To be sure of final position
       moveTo(x,y);
+      
       
       // Send angles over serial, for debugging purposes
       Serial.print("Theta1: ");Serial.println(theta1,2);
