@@ -1,7 +1,7 @@
 #include <Servo.h>
 
-double l1=0.8; // First arm length (mm)
-double l2=0.7; // Second arm length (mm)
+double l1=0.50; // First arm length (mm)
+double l2=0.75; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
@@ -29,11 +29,16 @@ void setup() {
 }
 
 void loop() {
+  //Serial communication variables
   char input[40],buf,*chop;
-  int time,i,segments;
   double x1,x2,nx2,y1,y2,ny2;
+  int time;
+  //Interpolation variables
+  int i,segments;
   
   memset(input,0,40); // Set buffer to 0
+  
+  //Wait for data
   while (!Serial.available());
   
   for (i=0 ;Serial.available()>0 && i<39 ; i++) {
@@ -81,16 +86,19 @@ void loop() {
       x=x1+x2/pow(10,nx2); //mm
       y=y1+y2/pow(10,ny2); //mm
       
+      //Calculate number of gegments
+      segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
+      //Fix number of segments for debug
+      //segments=10;
+      
       Serial.print("Moving to (");
       Serial.print(x);
       Serial.print(",");
       Serial.print(y);
-      Serial.println(")");
+      Serial.print(") in ");
+      Serial.print(segments);
+      Serial.println(" segemnts.");
 
-      segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
-      
-      //Fix number of segments for debug
-      //segments=10;
       
       // Interpolate
       for (i=0;i<=segments-1;i++){
@@ -121,19 +129,26 @@ void loop() {
 
 void moveTo(double x, double y){
     bl=sqrt(x*x+y*y); // (x,y) vector length
-
-    // Angle between first arm and the vector
-    theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI; 
-    theta1+=atan(y/x);
     
-    // Angle between the first and the second arm 
-    theta2=acos((bl*bl+l2*l2-l1*l1)/(2*bl*l2))*180/PI;
-    
-    // Set both servos
-    servo1.write(theta1);
-    servo1.write(theta2);
+    Serial.print(" bl: ");Serial.print(bl,4);
     Serial.print(" x: ");Serial.print(x,4);Serial.print(" y: ");Serial.print(y,4);
-    Serial.print(" Theta: ");Serial.print(theta1,4);Serial.print(",");Serial.println(theta2,4);
+      
+    if (bl>=abs(l1-l2) && bl<=l1+l2) {
+  
+      // Angle between first arm and the vector
+      theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI; 
+      theta1+=atan(y/x);
+      
+      // Angle between the first and the second arm 
+      theta2=acos((bl*bl+l2*l2-l1*l1)/(2*bl*l2))*180/PI;
+      
+      // Set both servos
+      servo1.write(theta1);
+      servo1.write(theta2);
+      Serial.print(" Theta: ");Serial.print(theta1,4);Serial.print(",");Serial.println(theta2,4);
+    } else {
+      Serial.println(" ERROR: Point unreachable");
+    } 
 
 }
 
