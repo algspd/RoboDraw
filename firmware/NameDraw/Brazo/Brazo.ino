@@ -5,6 +5,7 @@ double l2=0.7; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
+double minstep=0.1; //mm
 
 // Recognized commands:
 // * d T : delay T millis
@@ -85,14 +86,15 @@ void loop() {
       Serial.print(",");
       Serial.print(y);
       Serial.println(")");
+
+      segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
       
-      bl=sqrt(x*x+y*y);
-      
-      segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/0.1;
+      //Fix number of segments for debug
+      //segments=10;
       
       // Interpolate
-      for (i=0;i<segments-1;i++){
-        moveTo(oldx+i*(x-oldx)/segments,oldy+i*(y-oldy)/segments);
+      for (i=0;i<=segments-1;i++){
+        moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
       }
       moveTo(x,y);
       
@@ -118,7 +120,7 @@ void loop() {
 }
 
 void moveTo(double x, double y){
-    //bl=sqrt(x*x+y*y); // (x,y) vector length
+    bl=sqrt(x*x+y*y); // (x,y) vector length
 
     // Angle between first arm and the vector
     theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI; 
@@ -130,8 +132,8 @@ void moveTo(double x, double y){
     // Set both servos
     servo1.write(theta1);
     servo1.write(theta2);
-    
-    Serial.print("Theta: ");Serial.print(theta1,2);Serial.print(",");Serial.println(theta2,2);
+    Serial.print(" x: ");Serial.print(x,4);Serial.print(" y: ");Serial.print(y,4);
+    Serial.print(" Theta: ");Serial.print(theta1,4);Serial.print(",");Serial.println(theta2,4);
 
 }
 
