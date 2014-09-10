@@ -1,4 +1,7 @@
 #include <Servo.h>
+#include "Letras.h"
+//#include <iostream>
+//#include <vector>
 
 double l1=50; // First arm length (mm)
 double l2=75; // Second arm length (mm)
@@ -6,6 +9,16 @@ double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
 double minstep=0.1; //mm
+
+//Variables for "handwriten" letters
+typedef struct{
+  float x;
+  float y;
+  char v;
+} coordenada;
+//First parameter, number of letter
+//Second parameter, list of points
+coordenada alfabeto[60][30];
 
 // Recognized commands:
 // * d T : delay T millis
@@ -30,6 +43,9 @@ void setup() {
   
   // Say hello
   Serial.println("Online :)");
+  Serial.print("El diccionario ocupa: ");
+  Serial.println(sizeof(alfabeto));
+  
 }
 
 void loop() {
@@ -146,7 +162,8 @@ void moveTo(double x, double y){
     bl=sqrt(x*x+y*y); // (x,y) vector length
     
     Serial.print(" bl: ");Serial.print(bl,4);
-    Serial.print(" x: ");Serial.print(x,4);Serial.print(" y: ");Serial.print(y,4);
+    Serial.print(" x: ");Serial.print(x,4);
+    Serial.print(" y: ");Serial.print(y,4);
       
     if (bl>=abs(l1-l2) && bl<=l1+l2) {
   
@@ -166,4 +183,45 @@ void moveTo(double x, double y){
     } 
 
 }
+
+//void initletras(coordenada alfabeto){
+//
+/* Letras (unidades en mm)
+  Mayusculas
+A
+{0.0, 5.0, 0},
+{4.0, 15.0, 1},
+{8.0, 0.0, 1},
+{2.0, 7.5, 0},
+{6.0, 7.5, 1}
+
+B
+{0.0, 5.0, 0},
+{0.0, 15.0, 1},
+{5.5, 15.0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{8.0, 12.5, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{5.5, 10.0, 1},
+{0.0, 10.0, 1},
+{5.5, 10.0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{8.0, 7.5, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{.0, .0, 1},
+{5.5, 5.0, 1},
+{0.0, 5.0, 1},
+*/
+//}
+//
+//void printletra(char l) {
+//  
+//}
 
