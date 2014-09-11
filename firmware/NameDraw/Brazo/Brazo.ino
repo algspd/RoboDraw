@@ -11,14 +11,15 @@ double bl;
 double minstep=0.1; //mm
 
 //Variables for "handwriten" letters
-typedef struct{
-  float x;
-  float y;
-  char v;
-} coordenada;
+//typedef struct{
+//  float x;
+//  float y;
+//  char v;
+//} coordenada;
 //First parameter, number of letter
 //Second parameter, list of points
-coordenada alfabeto[60][30];
+//coordenada alfabeto[6][3];
+
 
 // Recognized commands:
 // * d T : delay T millis
@@ -43,6 +44,11 @@ void setup() {
   
   // Say hello
   Serial.println("Online :)");
+//  foo++;
+//  Serial.println(foo);
+//  alfabeto[0][0].y = 5.0;
+  initletra();
+  Serial.println(alfabeto[0][0].y);
   Serial.print("El diccionario ocupa: ");
   Serial.println(sizeof(alfabeto));
   
@@ -184,40 +190,37 @@ void moveTo(double x, double y){
 
 }
 
+
+
 //void initletras(coordenada alfabeto){
 //
 /* Letras (unidades en mm)
   Mayusculas
-A
-{0.0, 5.0, 0},
-{4.0, 15.0, 1},
-{8.0, 0.0, 1},
-{2.0, 7.5, 0},
-{6.0, 7.5, 1}
+
 
 B
-{0.0, 5.0, 0},
-{0.0, 15.0, 1},
-{5.5, 15.0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{8.0, 12.5, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{5.5, 10.0, 1},
-{0.0, 10.0, 1},
-{5.5, 10.0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{8.0, 7.5, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{.0, .0, 1},
-{5.5, 5.0, 1},
-{0.0, 5.0, 1},
+alfabeto[0][0]{0.0, 5.0, 0},
+alfabeto[0][0]{0.0, 15.0, 1},
+alfabeto[0][0]{5.5, 15.0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{8.0, 12.5, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{5.5, 10.0, 1},
+alfabeto[0][0]{0.0, 10.0, 1},
+alfabeto[0][0]{5.5, 10.0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{8.0, 7.5, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{.0, .0, 1},
+alfabeto[0][0]{5.5, 5.0, 1},
+alfabeto[0][0]{0.0, 5.0, 1},
 */
 //}
 //
