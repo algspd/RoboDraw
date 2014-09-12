@@ -56,28 +56,28 @@ void setup() {
   Serial.println(sizeof(int));
   Serial.print("El diccionario ocupa: ");
   Serial.println(sizeof(alfabeto));
-  for (i=0; i<53; i++) {
-    for (j=0; j<24; j++) {
-      for (k=0; k<3; k++) {
-        //myFloat = pgm_read_float_near(foo+k);
-        myFloat = pgm_read_float( &alfabeto[i][j][k] );
-        Serial.print(myFloat);
-        //myInt = pgm_read_word( &alfabeto[i][j][k] );
-        //Serial.print(myInt);
-        Serial.print(" ");
-      }Serial.println();
-    }Serial.println();
-  }
-  Serial.println();
+//  for (i=0; i<54; i++) {
+//    for (j=0; j<25; j++) {
+//      for (k=0; k<3; k++) {
+//        //myFloat = pgm_read_float_near(foo+k);
+//        myFloat = pgm_read_float( &alfabeto[i][j][k] );
+//        Serial.print(myFloat);
+//        //myInt = pgm_read_word( &alfabeto[i][j][k] );
+//        //Serial.print(myInt);
+//        Serial.print(" ");
+//      }Serial.println();
+//    }Serial.println();
+//  }
+//  Serial.println();
 }
 
 void loop() {
-  Serial.print("Empiezo!!!");  
+  Serial.println("Empiezo!!!");  
   
 
   //Serial communication variables
-  char input[40],buf,*chop;
-  double x1,x2,nx2,y1,y2,ny2;
+  char input[40],buf,*chop,l;
+  double x1,x2,nx2,y1,y2,ny2,v;
   int time, p;
   //Interpolation variables
   int i,segments;
@@ -101,6 +101,15 @@ void loop() {
       Serial.print(",");
       Serial.print(y);
       Serial.println(")");
+      break;
+      
+    case 'l': // Write letter
+      strtok(input," ");
+      chop=strtok(NULL," ");
+      l = chop[0];
+      Serial.print("Writting leter: ");
+      Serial.println(l);
+      printletter(l);
       break;
     
     case 'd': // Delay
@@ -135,40 +144,8 @@ void loop() {
       x=x1+x2/pow(10,nx2); //mm
       y=y1+y2/pow(10,ny2); //mm
       
-      //Calculate number of gegments
-      segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
-      //Fix number of segments for debug
-      //segments=10;
+      writeline(x, y, p);
       
-      Serial.print("Moving to (");
-      Serial.print(x);
-      Serial.print(",");
-      Serial.print(y);
-      Serial.print(") in ");
-
-      
-      // Interpolate
-      if (p==1) {
-        
-        Serial.print(segments);
-        Serial.println(" segemnts.");
-        for (i=1;i<=segments-1;i++){
-          moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
-        }
-      } else {
-        Serial.println("1 quick segemnt.");
-      }
-      
-      //To be sure of final position
-      moveTo(x,y);
-      
-      
-      // Send angles over serial, for debugging purposes
-      Serial.print("Theta1: ");Serial.println(theta1,2);
-      Serial.print("Theta2: ");Serial.println(theta2,2);
-  
-      oldx=x;
-      oldy=y;
       delay(1000);  
       break;
       
@@ -210,41 +187,86 @@ void moveTo(double x, double y){
 
 }
 
+// Traza una recta (v=1:dibujando o v=0:no) desde el punto actual
+// al indicado como parametro 
+void writeline(double x,double y, double v){
+  //Calculate number of gegments
+  int segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
+  //Fix number of segments for debug
+  //segments=10;
+  
+  Serial.print("Moving to (");
+  Serial.print(x);
+  Serial.print(",");
+  Serial.print(y);
+  Serial.print(") in ");
+  
+  
+  // Interpolate
+  if (v==1) {
+    
+    Serial.print(segments);
+    Serial.println(" segemnts.");
+    for (i=1;i<=segments-1;i++){
+      moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
+    }
+  } else {
+    Serial.println("1 quick segemnt.");
+  }
+  
+  //To be sure of final position
+  moveTo(x,y);
+  
+  
+  // Send angles over serial, for debugging purposes
+  Serial.print("Theta1: ");Serial.println(theta1,2);
+  Serial.print("Theta2: ");Serial.println(theta2,2);
+  
+  oldx=x;
+  oldy=y;
+  
+}
+
+void printletter(char l) {
+  int i;
+  if ( l <= 'N' ) { //Mayusculas antes de la Ñ
+    i=l-'A';
+    Serial.println("Mayusculas antes de la ENHE");
+  } else if (!strcmp((char*)l,"Ñ")) {//La Ñ
+    i='N'-'A'+1;
+    Serial.println("La ENHE");
+  } else if (l <= 'Z') {//Mayusculas despues de la Ñ
+    i=l-'A'+1;
+    Serial.println("Mayusculas despues de la ENHE");
+  } else if (l <= 'n') {//Minusculas antes de la ñ
+    i=l-'a'+'Z'-'A'+1;
+    Serial.println("Minusculas antes de la enhe");    
+  } else if (l == 'ñ') {//La ñ
+    i='n'-'a'+1+'Z'-'A'+1;
+    Serial.println("La enhe");    
+  } else if (l <= 'z') {//Minusculas despues de la ñ
+    i=l-'a'+'Z'-'A'+2;
+    Serial.println("Minusculas despues de la enhe");    
+  }
+  
+  Serial.println(i);
 
 
-//void initletras(coordenada alfabeto){
-//
-/* Letras (unidades en mm)
-  Mayusculas
 
-
-B
-alfabeto[0][0]{0.0, 5.0, 0},
-alfabeto[0][0]{0.0, 15.0, 1},
-alfabeto[0][0]{5.5, 15.0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{8.0, 12.5, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{5.5, 10.0, 1},
-alfabeto[0][0]{0.0, 10.0, 1},
-alfabeto[0][0]{5.5, 10.0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{8.0, 7.5, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{.0, .0, 1},
-alfabeto[0][0]{5.5, 5.0, 1},
-alfabeto[0][0]{0.0, 5.0, 1},
-*/
-//}
-//
-//void printletra(char l) {
-//  
-//}
+////  for (i=0; i<54; i++) {
+//    for (j=0; j<25; j++) {
+//      for (k=0; k<3; k++) {
+//        //myFloat = pgm_read_float_near(foo+k);
+//        myFloat = pgm_read_float( &alfabeto[i][j][k] );
+//        Serial.print(myFloat);
+//        //myInt = pgm_read_word( &alfabeto[i][j][k] );
+//        //Serial.print(myInt);
+//        Serial.print(" ");
+//      }Serial.println();
+//    }Serial.println();
+////  }
+////  Serial.println();
+  
+  
+}
 
