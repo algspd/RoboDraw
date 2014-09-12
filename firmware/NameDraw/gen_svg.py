@@ -21,7 +21,7 @@ path = document.getElementsByTagName("path")
 #print 'void initletra(){'
 
 print '#include <avr/pgmspace.h>'
-print 'float const PROGMEM alfabeto[53][24][3]={'
+print 'float const PROGMEM alfabeto[54][25][3]={'
 
 j=0;
 
