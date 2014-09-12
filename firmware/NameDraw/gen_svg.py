@@ -8,17 +8,20 @@ document = minidom.parse(svgfile)
 
 path = document.getElementsByTagName("path")
 
-print 'typedef struct{'
-print '  float x;'
-print '  float y;'
-print '  char v;'
-print '} coordenada;'
+#print 'typedef struct{'
+#print '  float x;'
+#print '  float y;'
+#print '  char v;'
+#print '} coordenada;'
 
-print '//Max 28x6 Si lo haces mas grande peta el arduino (se queda sin memoria?)'
-print 'coordenada alfabeto[53][24];'
-print 'int foo=5;'
+#print '//Max 28x6 Si lo haces mas grande peta el arduino (se queda sin memoria?)'
+#print 'coordenada alfabeto[53][24];'
+#print 'int foo=5;'
 
-print 'void initletra(){'
+#print 'void initletra(){'
+
+print '#include <avr/pgmspace.h>'
+print 'float const PROGMEM alfabeto[53][24][3]={'
 
 j=0;
 
@@ -60,6 +63,7 @@ for e in path:
   #print miny
   alp = [(p[0]-minx, p[1]-miny) for p in alp]
   
+  print '  {'
   print '  //Letra numero {0}'.format(j+1)
   i=0
   lastp={0.432342,0.34352}
@@ -71,12 +75,14 @@ for e in path:
       nextv=0
     else:
       nextv=1
-      print '  alfabeto[{letra}][{punto}]={{ {x}, {y}, {v} }};'.format(letra=j, punto=i, x=p[0], y=p[1], v=v)
+      #print '  alfabeto[{letra}][{punto}]={{ {x}, {y}, {v} }};'.format(letra=j, punto=i, x=p[0], y=p[1], v=v)
+      print '  {{ {x}, {y}, {v} }},'.format(letra=j, punto=i, x=p[0], y=p[1], v=v)
   
     v=nextv
     lastp=p
     i=i+1
 
+  print '  },'
   j=j+1
 
 #print alp
@@ -84,4 +90,4 @@ for e in path:
 #-- Add the first point    
 #alp.append(alp[0])
 
-print "}"
+print "};"

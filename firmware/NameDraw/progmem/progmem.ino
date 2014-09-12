@@ -9,7 +9,7 @@
 //unsigned int displayInt;
 int k;    // counter variable
 float myFloat;
-float const PROGMEM foo[3][2]={{1.0,2.0},{3.0,4.0},{5.0,6.0}};
+float const PROGMEM foo[54][24][3]={{{1.0,2.0,2.0},{3.0,4.0,2.0},{5.0,6.0,2.0}},{{1.0,2.0,2.0},{3.0,4.0,2.0},{5.0,6.0,2.0}}};
 int i,j;
 char myChar;  
 char const MyString[] PROGMEM = "This should be in flash as well";  
@@ -33,13 +33,16 @@ void setup() {
   Serial.println();
 
   Serial.println(sizeof(foo));
-  for (k=0; k<2; k++) {
-    for (j=0; j<3; j++) {
-      //myFloat = pgm_read_float_near(foo+k);
-      myFloat = pgm_read_float( &foo[j][k] );
-      Serial.print(myFloat);
-      Serial.print(" ");
-    }
+  
+  for (i=0; i<54; i++) {
+    for (j=0; j<24; j++) {
+      for (k=0; k<3; k++) {
+        //myFloat = pgm_read_float_near(foo+k);
+        myFloat = pgm_read_float( &foo[i][j][k] );
+        Serial.print(myFloat);
+        Serial.print(" ");
+      }Serial.println();
+    }Serial.println();
   }
   Serial.println();
 
