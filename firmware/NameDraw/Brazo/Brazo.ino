@@ -6,7 +6,7 @@ double const l2=126; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
-double const minstep=0.1; //mm
+double const minstep=1.0; //mm
 double maxx=36;
 double const kerning=1;
 
@@ -34,7 +34,7 @@ double const kerning=1;
 
 Servo servo1, servo2;
 
-int i,j,k;
+int i,j,k,a1,a2;
 float myFloat;
 int myInt;
 
@@ -123,6 +123,21 @@ void loop() {
       delay (time);
       break;
       
+     case 'a': // Position the arm
+    
+      strtok(input," ");
+      chop=strtok(NULL," ");
+      a1 = atoi(chop);
+      
+      chop=strtok(NULL," ");
+      a2 = atoi(chop);
+      
+      servo1.write(a1);
+      servo2.write(a2);
+      
+      delay(1000);  
+      break;
+      
     case 'p': // Position the arm
     
       strtok(input," ");
@@ -174,15 +189,15 @@ void moveTo(double x, double y){
     if (bl>=abs(l1-l2) && bl<=l1+l2) {
   
       // Angle between first arm and the vector
-      theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI; 
+      theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI;
       theta1+=atan(y/x);
       
       // Angle between the first and the second arm 
       theta2=acos((bl*bl+l2*l2-l1*l1)/(2*bl*l2))*180/PI;
       
       // Set both servos
-      servo1.write(theta1);
-      servo1.write(theta2);
+      servo1.write(theta1+90);
+      servo2.write(theta2+90);
       Serial.print(" Theta: ");Serial.print(theta1,4);Serial.print(",");Serial.println(theta2,4);
     } else {
       Serial.println(" ERROR: Point unreachable");
