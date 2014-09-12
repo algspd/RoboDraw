@@ -1,12 +1,14 @@
 #include <Servo.h>
 #include "Letras.h"
 
-double l1=50; // First arm length (mm)
-double l2=75; // Second arm length (mm)
+double const l1=76; // First arm length (mm)
+double const l2=126; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
-double minstep=0.1; //mm
+double const minstep=0.1; //mm
+double maxx=36;
+double const kerning=1;
 
 //Variables for "handwriten" letters
 //typedef struct{
@@ -162,6 +164,7 @@ void loop() {
 }
 
 void moveTo(double x, double y){
+    maxx=max(x,maxx);
     bl=sqrt(x*x+y*y); // (x,y) vector length
     
     Serial.print(" bl: ");Serial.print(bl,4);
@@ -190,6 +193,7 @@ void moveTo(double x, double y){
 // Traza una recta (v=1:dibujando o v=0:no) desde el punto actual
 // al indicado como parametro 
 void writeline(double x,double y, double v){
+  double newx,newy;
   //Calculate number of gegments
   int segments=sqrt((x-oldx)*(x-oldx)+(y-oldy)*(y-oldy))/minstep;
   //Fix number of segments for debug
@@ -208,7 +212,9 @@ void writeline(double x,double y, double v){
     Serial.print(segments);
     Serial.println(" segemnts.");
     for (i=1;i<=segments-1;i++){
-      moveTo(oldx+(i*(x-oldx)/segments),oldy+(i*(y-oldy)/segments));
+      newx = oldx+(i*(x-oldx)/segments);
+      newy = oldy+(i*(y-oldy)/segments);
+      moveTo(newx,newy);
     }
   } else {
     Serial.println("1 quick segemnt.");
@@ -229,44 +235,67 @@ void writeline(double x,double y, double v){
 
 void printletter(char l) {
   int i;
+  double x, y, v, xoffset;
+  xoffset=maxx+kerning;
+  
+  Serial.write(l);
+  Serial.println();
   if ( l <= 'N' ) { //Mayusculas antes de la Ñ
     i=l-'A';
     Serial.println("Mayusculas antes de la ENHE");
-  } else if (!strcmp((char*)l,"Ñ")) {//La Ñ
+  } else if (l == 'Ñ') {//La Ñ
     i='N'-'A'+1;
     Serial.println("La ENHE");
   } else if (l <= 'Z') {//Mayusculas despues de la Ñ
     i=l-'A'+1;
     Serial.println("Mayusculas despues de la ENHE");
   } else if (l <= 'n') {//Minusculas antes de la ñ
-    i=l-'a'+'Z'-'A'+1;
+    i=l-'a'+'Z'-'A'+2;
     Serial.println("Minusculas antes de la enhe");    
-  } else if (l == 'ñ') {//La ñ
-    i='n'-'a'+1+'Z'-'A'+1;
+  } else if (l == 'ñ' ) {//La ñ
+    i='n'-'a'+1+'Z'-'A'+2;
     Serial.println("La enhe");    
   } else if (l <= 'z') {//Minusculas despues de la ñ
-    i=l-'a'+'Z'-'A'+2;
+    i=l-'a'+'Z'-'A'+3;
     Serial.println("Minusculas despues de la enhe");    
   }
   
-  Serial.println(i);
+  //Serial.println(i);
+  Serial.println();
 
 
+//  for (i=0; i<54; i++) {
+    for (j=0; j<25; j++) {
+      //for (k=0; k<3; k++) {
+        //myFloat = pgm_read_float_near(foo+k);
+        
+        //Read x
+        myFloat = pgm_read_float( &alfabeto[i][j][0] );
+        Serial.print(myFloat);
+        Serial.print(" ");
+        x=myFloat;
+        //Read y
+        myFloat = pgm_read_float( &alfabeto[i][j][1] );
+        Serial.print(myFloat);
+        Serial.print(" ");
+        y=myFloat;
+        //Read v
+        myFloat = pgm_read_float( &alfabeto[i][j][2] );
+        Serial.print(myFloat);
+        Serial.print(" ");
+        v=myFloat;
+        
+        //myInt = pgm_read_word( &alfabeto[i][j][k] );
+        //Serial.print(myInt);
+        //Serial.print(" ");
+      //}
+      Serial.println();
+      writeline(x+xoffset, y+36, v);
+    }
+    Serial.println();
+//  }
+//  Serial.println();
 
-////  for (i=0; i<54; i++) {
-//    for (j=0; j<25; j++) {
-//      for (k=0; k<3; k++) {
-//        //myFloat = pgm_read_float_near(foo+k);
-//        myFloat = pgm_read_float( &alfabeto[i][j][k] );
-//        Serial.print(myFloat);
-//        //myInt = pgm_read_word( &alfabeto[i][j][k] );
-//        //Serial.print(myInt);
-//        Serial.print(" ");
-//      }Serial.println();
-//    }Serial.println();
-////  }
-////  Serial.println();
-  
   
 }
 
