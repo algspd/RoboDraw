@@ -1,25 +1,14 @@
 #include <Servo.h>
 #include "Letras.h"
 
-double const l1=76; // First arm length (mm)
-double const l2=126; // Second arm length (mm)
+double const l1=74; // First arm length (mm)
+double const l2=129; // Second arm length (mm)
 double x=0,y=0,oldx,oldy;
 double theta1,theta2;
 double bl;
 double const minstep=1.0; //mm
 double maxx=36;
 double const kerning=1;
-
-//Variables for "handwriten" letters
-//typedef struct{
-//  float x;
-//  float y;
-//  char v;
-//} coordenada;
-//First parameter, number of letter
-//Second parameter, list of points
-//coordenada alfabeto[6][3];
-
 
 // Recognized commands:
 // * d T : delay T millis
@@ -32,7 +21,7 @@ double const kerning=1;
 //       V=1 Quik movement, not interpolated, moving from one letter to another
 // * g : Return position of the arm
 
-Servo servo1, servo2;
+Servo servo1, servo2, boli;
 
 int i,j,k,a1,a2;
 float myFloat;
@@ -41,40 +30,28 @@ int myInt;
 void setup() {
   
   // Initialize serial
-  Serial.begin(9600);
+  Serial.begin(115200);
  
-  // Attach servos
+  // Attach pen servo
+  boli.attach(11);
+  boli.writeMicroseconds(1900);
+  // Wait for the pen to be up
+  delay(300);
   servo1.attach(9);
   servo2.attach(10);
+  
+  // Wait for the arm to be in start position
+  delay(1000);
+  //boli.writeMicroseconds(1400);
   
   // Say hello
   Serial.println("Online :)");
   
-//  foo++;
-//  Serial.println(foo);
-  //alfabeto[0][0].y = 5.0;
-  //initletra();
-  //Serial.println(alfabeto[0][0].y);
-  Serial.println(sizeof(int));
-  Serial.print("El diccionario ocupa: ");
-  Serial.println(sizeof(alfabeto));
-//  for (i=0; i<54; i++) {
-//    for (j=0; j<25; j++) {
-//      for (k=0; k<3; k++) {
-//        //myFloat = pgm_read_float_near(foo+k);
-//        myFloat = pgm_read_float( &alfabeto[i][j][k] );
-//        Serial.print(myFloat);
-//        //myInt = pgm_read_word( &alfabeto[i][j][k] );
-//        //Serial.print(myInt);
-//        Serial.print(" ");
-//      }Serial.println();
-//    }Serial.println();
-//  }
-//  Serial.println();
 }
 
 void loop() {
-  Serial.println("Empiezo!!!");  
+  Serial.println("Esperando instrucciones: ");
+  boli.writeMicroseconds(1800);
   
 
   //Serial communication variables
@@ -103,6 +80,21 @@ void loop() {
       Serial.print(",");
       Serial.print(y);
       Serial.println(")");
+      break;
+      
+    case 'c': // Write letter
+      Serial.println("Cuadradico!");
+      while (true){
+        writeline(30.1, 140.0, 1);
+        delay (500);
+        writeline(50.1, 140.0, 1);
+        delay (500);
+        writeline(50.1, 160.0, 1);
+        delay (500);
+        writeline(30.1, 160.0, 1);
+        delay (500);
+      }
+      
       break;
       
     case 'l': // Write letter
@@ -141,29 +133,18 @@ void loop() {
     case 'p': // Position the arm
     
       strtok(input," ");
-      chop=strtok(NULL,".");
-      x1 = atoi(chop);
+      chop=strtok(NULL," ");
+      x = atoi(chop);
       
       chop=strtok(NULL," ");
-      x2 = atoi(chop);
-      nx2=strlen(chop);
-      
-      chop=strtok(NULL,".");
-      y1 = atoi(chop);
-      
-      chop=strtok(NULL," ");
-      y2 = atoi(chop);
-      ny2=strlen(chop);
-      
+      y = atoi(chop);
+            
       chop=strtok(NULL," ");
       p = atoi(chop);
       
-      x=x1+x2/pow(10,nx2); //mm
-      y=y1+y2/pow(10,ny2); //mm
-      
       writeline(x, y, p);
       
-      delay(1000);  
+      delay(100);
       break;
       
     default:
@@ -184,25 +165,41 @@ void moveTo(double x, double y){
     
     Serial.print(" bl: ");Serial.print(bl,4);
     Serial.print(" x: ");Serial.print(x,4);
-    Serial.print(" y: ");Serial.print(y,4);
+    Serial.print(" y: ");Serial.println(y,4);
       
     if (bl>=abs(l1-l2) && bl<=l1+l2) {
-  
+
+      double o2=acos((-(bl*bl)+(l1*l1)+(l2*l2))/(2*l1*l2));
+      
       // Angle between first arm and the vector
-      theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI;
-      theta1+=atan(y/x);
+      theta1=PI/2-atan2(y,x)-asin((l2*sin(o2))/bl);
+      //theta1=acos((bl*bl+l1*l1-l2*l2)/(2*bl*l1))*180/PI;
+      //theta1+=atan(y/x);
       
       // Angle between the first and the second arm 
-      theta2=acos((bl*bl+l2*l2-l1*l1)/(2*bl*l2))*180/PI;
+      //theta2=acos((bl*bl+l2*l2-l1*l1)/(2*bl*l2))*180/PI;
+      theta2=PI-o2;
       
-      // Set both servos
-      servo1.write(theta1+90);
-      servo2.write(theta2+90);
-      Serial.print(" Theta: ");Serial.print(theta1,4);Serial.print(",");Serial.println(theta2,4);
+      // Convert both angles to degrees
+      theta1=(theta1*180/PI);
+      theta2=(theta2*180/PI);
+      
+      if(theta1>90 || theta2>90 || theta1<-90 || theta2<-90){
+        Serial.println("------------> NO HAY SOLUCION EN EL RECORRIDO DE LOS SERVOS");
+      }
+      else {
+        // *1600/180+700 Hace la conversion del rango 0-180 a 700-2300
+        servo1.writeMicroseconds((theta1+90)*1600/180+700);
+        servo2.writeMicroseconds((theta2+90)*1600/180+700);
+      }
+
+      // FIXME: Calcular el tiempo de desplazamiento dinamicamente
+      delay(50);
+      
+      Serial.print(" Theta: ");Serial.print(theta1,2);Serial.print(",");Serial.println(theta2,2);
     } else {
       Serial.println(" ERROR: Point unreachable");
-    } 
-
+    }
 }
 
 // Traza una recta (v=1:dibujando o v=0:no) desde el punto actual
@@ -220,29 +217,34 @@ void writeline(double x,double y, double v){
   Serial.print(y);
   Serial.print(") in ");
   
-  
   // Interpolate
   if (v==1) {
+    delay(100);
+    boli.writeMicroseconds(1400);
     
     Serial.print(segments);
-    Serial.println(" segemnts.");
+    Serial.println(" segments.");
     for (i=1;i<=segments-1;i++){
       newx = oldx+(i*(x-oldx)/segments);
       newy = oldy+(i*(y-oldy)/segments);
       moveTo(newx,newy);
     }
-  } else {
+  }
+  else {
+    // if v==0
+    boli.writeMicroseconds(1800);
+    delay(100);
     Serial.println("1 quick segemnt.");
   }
   
   //To be sure of final position
   moveTo(x,y);
-  
-  
+
   // Send angles over serial, for debugging purposes
   Serial.print("Theta1: ");Serial.println(theta1,2);
   Serial.print("Theta2: ");Serial.println(theta2,2);
   
+  // FIXME: actualizar solo si el brazo realmente se ha movido
   oldx=x;
   oldy=y;
   
@@ -278,39 +280,21 @@ void printletter(char l) {
   //Serial.println(i);
   Serial.println();
 
-
-//  for (i=0; i<54; i++) {
+    x = pgm_read_float( &alfabeto[i][0][0] );
+    y = pgm_read_float( &alfabeto[i][0][1] );
+    writeline(x+xoffset, y+146, 0);
+    
     for (j=0; j<25; j++) {
-      //for (k=0; k<3; k++) {
-        //myFloat = pgm_read_float_near(foo+k);
-        
         //Read x
-        myFloat = pgm_read_float( &alfabeto[i][j][0] );
-        Serial.print(myFloat);
-        Serial.print(" ");
-        x=myFloat;
+        x = pgm_read_float( &alfabeto[i][j][0] );
         //Read y
-        myFloat = pgm_read_float( &alfabeto[i][j][1] );
-        Serial.print(myFloat);
-        Serial.print(" ");
-        y=myFloat;
+        y = pgm_read_float( &alfabeto[i][j][1] );
         //Read v
-        myFloat = pgm_read_float( &alfabeto[i][j][2] );
-        Serial.print(myFloat);
-        Serial.print(" ");
-        v=myFloat;
-        
-        //myInt = pgm_read_word( &alfabeto[i][j][k] );
-        //Serial.print(myInt);
-        //Serial.print(" ");
-      //}
-      Serial.println();
-      writeline(x+xoffset, y+36, v);
+        v = pgm_read_float( &alfabeto[i][j][2] );
+        //v=0;
+      xoffset=0;
+      writeline(x+xoffset, y+146, v);
     }
     Serial.println();
-//  }
-//  Serial.println();
-
-  
 }
 
