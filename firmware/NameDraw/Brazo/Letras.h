@@ -1,5 +1,5 @@
 #include <avr/pgmspace.h>
-float const PROGMEM alfabeto[53][24][3]={
+float const PROGMEM alfabeto[54][25][3]={
   {
   //Letra numero 1
   { 0.0, 1.26269, 0 },
