@@ -47,13 +47,17 @@ for e in path:
 
   alp = []
 
+# changing to absolute coordinates
   for p in lp:
       x,y = p
       xc += x
       yc += y
       alp.append((xc, yc))
 
+# Flip y axis
   alp = [(p[0], -p[1]) for p in alp]
+
+# Looking for the minimum in both axes
   minx=100000000
   miny=100000000
   for p in alp:
@@ -61,6 +65,8 @@ for e in path:
     miny=min(miny,p[1])
   #print minx
   #print miny
+
+# Moving letters to the axis by substarcting the minimum
   alp = [(p[0]-minx, p[1]-miny) for p in alp]
   
   print '  {'
@@ -69,8 +75,7 @@ for e in path:
   lastp={0.432342,0.34352}
   v=0
   for p in alp:
-    # Ir mostrando array C guardando anterior y si actual=anterior boli arriba=1
-    # 
+# If last poin equal to new one, then don't write (v=0)
     if lastp == p:
       nextv=0
     else:
